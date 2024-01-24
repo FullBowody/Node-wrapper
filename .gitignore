@@ -1,6 +1,7 @@
 .vscode/
 
 build/
+node_modules/
 
 bin/Engine.dll
 lib/Engine.lib
