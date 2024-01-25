@@ -22,7 +22,15 @@
                 "library_dirs": [
                   "<(module_root_dir)/lib"
                 ]
-            }
+            },
+            "copies": [
+              {
+                "destination": "<(module_root_dir)/build/Release",
+                "files": [
+                  "<(module_root_dir)/bin/*.dll"
+                ]
+              }
+            ]
           }
         ]
       ]

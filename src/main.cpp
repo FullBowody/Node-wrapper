@@ -1,7 +1,7 @@
 #include <napi.h>
 #include "Engine/EngineLoader.hpp"
 
-const std::string ENGINE_PATH = "C:/Users/furwa/Documents/FurWaz/FullBowody/Engine/build/Debug/Engine.dll";
+const std::string ENGINE_PATH = "./Engine.dll";
 
 EngineLoader loader(ENGINE_PATH);
 Engine* engine = nullptr;
