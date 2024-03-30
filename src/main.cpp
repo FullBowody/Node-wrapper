@@ -1,5 +1,5 @@
 #include <napi.h>
-#include "Engine/EngineLoader.hpp"
+#include "EngineLoader.hpp"
 
 const std::string ENGINE_PATH = "./Engine.dll";
 
@@ -15,19 +15,21 @@ Napi::Value Init(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
     engine = loader.createEngine();
+    engine->start();
     return Napi::Boolean::New(env, true);
 }
 
-Napi::Value Run(const Napi::CallbackInfo& info)
+Napi::Value Update(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
-    engine->Run();
+    engine->update(0.1f);
     return Napi::Boolean::New(env, true);
 }
 
 Napi::Value Shutdown(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
+    engine->stop();
     loader.destroyEngine(engine);
     return Napi::Boolean::New(env, true);
 }
@@ -35,7 +37,7 @@ Napi::Value Shutdown(const Napi::CallbackInfo& info)
 Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
     registerFunction(exports, env, "init", Init);
-    registerFunction(exports, env, "run", Run);
+    registerFunction(exports, env, "update", Update);
     registerFunction(exports, env, "shutdown", Shutdown);
 
     return exports;
