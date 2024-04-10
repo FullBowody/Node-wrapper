@@ -8,7 +8,7 @@ Napi::Value CameraWrap::NewInstance(Napi::Env env, Camera* camera)
 {
     Napi::HandleScope scope(env);
 
-    if (constructor == nullptr)
+    if (constructor == nullptr || camera == nullptr)
         return env.Null();
 
     return constructor->New({Napi::External<Camera>::New(env, camera)});

@@ -21,6 +21,8 @@ public:
     Napi::Value Stop(const Napi::CallbackInfo& info);
 
     Napi::Value CreateCamera(const Napi::CallbackInfo& info);
+    Napi::Value GetCamera(const Napi::CallbackInfo& info);
+    Napi::Value GetCameras(const Napi::CallbackInfo& info);
     Napi::Value DestroyCamera(const Napi::CallbackInfo& info);
 
     Engine* getEngine();
