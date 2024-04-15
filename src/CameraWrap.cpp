@@ -23,7 +23,10 @@ Napi::Object CameraWrap::Init(Napi::Env env, Napi::Object exports)
 {
     Napi::Function func = DefineClass(env, "Camera", {
         InstanceMethod("readDevice", &CameraWrap::ReadDevice),
-        InstanceMethod("readStream", &CameraWrap::ReadStream)
+        InstanceMethod("readStream", &CameraWrap::ReadStream),
+        InstanceMethod("getWidth", &CameraWrap::GetWidth),
+        InstanceMethod("getHeight", &CameraWrap::GetHeight),
+        InstanceMethod("getFps", &CameraWrap::GetFps)
     });
 
     constructor = new Napi::FunctionReference();
@@ -62,6 +65,27 @@ Napi::Value CameraWrap::ReadStream(const Napi::CallbackInfo& info)
     std::string url = info[0].As<Napi::String>().Utf8Value();
     this->camera->readStream(url);
     return Napi::Boolean::New(env, true);
+}
+
+Napi::Value CameraWrap::GetWidth(const Napi::CallbackInfo& info)
+{
+    Napi::Env env = info.Env();
+    int width = this->camera->getWidth();
+    return Napi::Number::New(env, width);
+}
+
+Napi::Value CameraWrap::GetHeight(const Napi::CallbackInfo& info)
+{
+    Napi::Env env = info.Env();
+    int height = this->camera->getHeight();
+    return Napi::Number::New(env, height);
+}
+
+Napi::Value CameraWrap::GetFps(const Napi::CallbackInfo& info)
+{
+    Napi::Env env = info.Env();
+    int fps = this->camera->getFps();
+    return Napi::Number::New(env, fps);
 }
 
 Camera* CameraWrap::getCamera()

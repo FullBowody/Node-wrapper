@@ -19,5 +19,9 @@ public:
     Napi::Value ReadDevice(const Napi::CallbackInfo& info);
     Napi::Value ReadStream(const Napi::CallbackInfo& info);
 
+    Napi::Value GetWidth(const Napi::CallbackInfo& info);
+    Napi::Value GetHeight(const Napi::CallbackInfo& info);
+    Napi::Value GetFps(const Napi::CallbackInfo& info);
+
     Camera* getCamera();
 };
