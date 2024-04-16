@@ -5,34 +5,23 @@
       "cflags!": [ "-fno-exceptions" ],
       "cflags_cc!": [ "-fno-exceptions" ],
       "sources": [
-        "./src/main.cpp"
+        "<!@(node -p \"require('fs').readdirSync('./src').map(f=>'src/'+f).join(' ')\")"
       ],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")",
-        "<(module_root_dir)/include"
+        "<(module_root_dir)/include/public",
+        "<(module_root_dir)/include/private",
+        "<(module_root_dir)/dependencies/Engine/include/public",
       ],
       'defines': [ 'NAPI_DISABLE_CPP_EXCEPTIONS' ],
       "conditions": [
-        ['OS == "win"',
-          {
-            "link_settings": {
-                "libraries": [
-                    
-                ],
-                "library_dirs": [
-                  "<(module_root_dir)/lib"
-                ]
+        ['OS == "win"', {
+          "msvs_settings": {
+            'VCCLCompilerTool': {
+              'AdditionalOptions': [ '-std:c++17', ],
             },
-            "copies": [
-              {
-                "destination": "<(module_root_dir)/build/Release",
-                "files": [
-                  "<(module_root_dir)/bin/*.dll"
-                ]
-              }
-            ]
           }
-        ]
+        }]
       ]
     }
   ]

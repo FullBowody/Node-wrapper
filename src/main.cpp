@@ -1,44 +1,60 @@
 #include <napi.h>
-#include "Engine/EngineLoader.hpp"
+#include "EngineLoader.hpp"
+#include "EngineWrap.hpp"
+#include "CameraWrap.hpp"
 
-const std::string ENGINE_PATH = "./Engine.dll";
+EngineLoader* loader = nullptr;
 
-EngineLoader loader(ENGINE_PATH);
-Engine* engine = nullptr;
+#define register(x, y) exports.Set(Napi::String::New(env, x), Napi::Function::New(env, y))
 
-void registerFunction(Napi::Object exports, Napi::Env env, std::string name, Napi::Value (*function)(const Napi::CallbackInfo&))
-{
-    exports.Set(Napi::String::New(env, name), Napi::Function::New(env, function));
-}
-
-Napi::Value Init(const Napi::CallbackInfo& info)
+Napi::Value CreateEngine(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
-    engine = loader.createEngine();
+
+    if (loader != nullptr)
+    {
+        std::cerr << "Error : Engine already created" << std::endl;
+        return env.Null();
+    }
+
+    if (info.Length() > 0)
+        loader = new EngineLoader(info[0].As<Napi::String>().Utf8Value());
+    else loader = new EngineLoader();
+
+    Engine* engine = loader->createEngine();
+    if (engine == nullptr)
+    {
+        std::cerr << "Error : Engine creation failed" << std::endl;
+        loader = nullptr;
+        return env.Null();
+    }
+    return EngineWrap::NewInstance(env, engine);
+}
+
+Napi::Value DestroyEngine(const Napi::CallbackInfo& info)
+{
+    Napi::Env env = info.Env();
+    if (loader == nullptr)
+    {
+        std::cerr << "Error : Engine not created" << std::endl;
+        return Napi::Boolean::New(env, false);
+    }
+
+    Napi::Object wrapper = info[0].As<Napi::Object>();
+    EngineWrap* engineWrap = Napi::ObjectWrap<EngineWrap>::Unwrap(wrapper);
+    loader->destroyEngine(engineWrap->getEngine());
     return Napi::Boolean::New(env, true);
 }
 
-Napi::Value Run(const Napi::CallbackInfo& info)
+Napi::Object Register(Napi::Env env, Napi::Object exports)
 {
-    Napi::Env env = info.Env();
-    engine->Run();
-    return Napi::Boolean::New(env, true);
-}
+    register("createEngine", CreateEngine);
+    register("destroyEngine", DestroyEngine);
 
-Napi::Value Shutdown(const Napi::CallbackInfo& info)
-{
-    Napi::Env env = info.Env();
-    loader.destroyEngine(engine);
-    return Napi::Boolean::New(env, true);
-}
-
-Napi::Object Init(Napi::Env env, Napi::Object exports)
-{
-    registerFunction(exports, env, "init", Init);
-    registerFunction(exports, env, "run", Run);
-    registerFunction(exports, env, "shutdown", Shutdown);
+    EngineWrap::Init(env, exports);
+    CameraWrap::Init(env, exports);
 
     return exports;
 }
 
-NODE_API_MODULE(FullBowody, Init);
+NODE_API_MODULE(FullBowody, Register);
