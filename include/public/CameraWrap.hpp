@@ -18,12 +18,13 @@ public:
     CameraWrap(const Napi::CallbackInfo& info);
     ~CameraWrap();
 
-    Napi::Value ReadDevice(const Napi::CallbackInfo& info);
-    Napi::Value ReadStream(const Napi::CallbackInfo& info);
+    Napi::Value SetParam(const Napi::CallbackInfo& info);
+    Napi::Value GetParam(const Napi::CallbackInfo& info);
+    Napi::Value StartTracking(const Napi::CallbackInfo& info);
+    Napi::Value StopTracking(const Napi::CallbackInfo& info);
 
     Napi::Value GetWidth(const Napi::CallbackInfo& info);
     Napi::Value GetHeight(const Napi::CallbackInfo& info);
-    Napi::Value GetFps(const Napi::CallbackInfo& info);
 
     Napi::Value AddEventListener(const Napi::CallbackInfo& info);
 

@@ -77,7 +77,8 @@ Napi::Value EngineWrap::Stop(const Napi::CallbackInfo& info)
 Napi::Value EngineWrap::CreateCamera(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
-    Camera* camera = this->engine->createCamera();
+    std::string plugin = info[0].As<Napi::String>().Utf8Value();
+    Camera* camera = this->engine->createCamera(plugin);
     return CameraWrap::NewInstance(env, camera);
 }
 

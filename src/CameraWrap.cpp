@@ -1,5 +1,6 @@
 #include <memory.h>
 #include "CameraWrap.hpp"
+#include "Struct/Callback.hpp"
 #include "b64.h"
 
 Napi::FunctionReference* CameraWrap::constructor = nullptr;
@@ -22,12 +23,13 @@ CameraWrap* CameraWrap::FromObject(Napi::Object obj)
 Napi::Object CameraWrap::Init(Napi::Env env, Napi::Object exports)
 {
     Napi::Function func = DefineClass(env, "Camera", {
-        InstanceMethod("readDevice", &CameraWrap::ReadDevice),
-        InstanceMethod("readStream", &CameraWrap::ReadStream),
+        InstanceMethod("setParam", &CameraWrap::SetParam),
+        InstanceMethod("getParam", &CameraWrap::GetParam),
+        InstanceMethod("startTracking", &CameraWrap::StartTracking),
+        InstanceMethod("stopTracking", &CameraWrap::StopTracking),
         InstanceMethod("addEventListener", &CameraWrap::AddEventListener),
         InstanceMethod("getWidth", &CameraWrap::GetWidth),
-        InstanceMethod("getHeight", &CameraWrap::GetHeight),
-        InstanceMethod("getFps", &CameraWrap::GetFps)
+        InstanceMethod("getHeight", &CameraWrap::GetHeight)
     });
 
     constructor = new Napi::FunctionReference();
@@ -46,15 +48,19 @@ CameraWrap::CameraWrap(const Napi::CallbackInfo& info)
     Napi::External<Camera> ext = info[0].As<Napi::External<Camera>>();
     this->camera = ext.Data();
 
-    this->camera->attachListener([this](const CameraFrameEvent& ev) {
-        const Frame& frame = ev.getFrame();
+    this->camera->onPreview(new CallbackFunction<Frame>([this](const Frame& frame) {
         int size;
         unsigned char* data = frame.encodeJPG(25, &size);
+        if (data == nullptr)
+        {
+            std::cout << "=>  data is null" << std::endl;
+            return;
+        }
         char* b64 = b64_encode(data, size);
         delete[] data;
 
         std::string imgPrefix = "data:image/jpeg;base64,";
-        
+
         Napi::Env env = this->Env();
         Napi::Object obj = Napi::Object::New(env);
         obj.Set("width", Napi::Number::New(env, frame.getWidth()));
@@ -65,7 +71,7 @@ CameraWrap::CameraWrap(const Napi::CallbackInfo& info)
         {
             ref->Call({obj});
         }
-    });
+    }));
 }
 
 CameraWrap::~CameraWrap()
@@ -73,20 +79,59 @@ CameraWrap::~CameraWrap()
     
 }
 
-Napi::Value CameraWrap::ReadDevice(const Napi::CallbackInfo& info)
+Napi::Value CameraWrap::SetParam(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
-    int device = info[0].As<Napi::Number>().Int32Value();
-    this->camera->readDevice(device);
+    std::string paramName = info[0].As<Napi::String>().Utf8Value();
+    Napi::Value paramValue = info[1];
+    Param* param = this->camera->getParameter(paramName);
+    if (param == nullptr)
+        return Napi::Boolean::New(env, false);
+    
+    switch (param->getType())
+    {
+    case ParamType::INT:
+        param->setValue(paramValue.As<Napi::Number>().Int32Value());
+        break;
+    case ParamType::FLOAT: 
+        param->setValue(paramValue.As<Napi::Number>().FloatValue());
+        break;
+    case ParamType::BOOL:
+        param->setValue(paramValue.As<Napi::Boolean>().Value());
+        break;
+    case ParamType::STRING:
+        param->setValue(paramValue.As<Napi::String>().Utf8Value());
+        break;
+    case ParamType::ENUM:
+        param->setValue(paramValue.As<Napi::Number>().Int32Value());
+        break;
+    default: return Napi::Boolean::New(env, false);
+    }
     return Napi::Boolean::New(env, true);
 }
 
-Napi::Value CameraWrap::ReadStream(const Napi::CallbackInfo& info)
+Napi::Value CameraWrap::GetParam(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
-    std::string url = info[0].As<Napi::String>().Utf8Value();
-    this->camera->readStream(url);
-    return Napi::Boolean::New(env, true);
+    std::string paramName = info[0].As<Napi::String>().Utf8Value();
+    Param* param = this->camera->getParameter(paramName);
+    if (param == nullptr)
+        return Napi::Boolean::New(env, false);
+    
+    switch (param->getType())
+    {
+    case ParamType::INT:
+        return Napi::Number::New(env, param->asInt());
+    case ParamType::FLOAT: 
+        return Napi::Number::New(env, param->asFloat());
+    case ParamType::BOOL:
+        return Napi::Boolean::New(env, param->asBool());
+    case ParamType::STRING:
+        return Napi::String::New(env, param->asString());
+    case ParamType::ENUM:
+        return Napi::Number::New(env, param->asInt());
+    default: return env.Null();
+    }
 }
 
 Napi::Value CameraWrap::GetWidth(const Napi::CallbackInfo& info)
@@ -96,18 +141,25 @@ Napi::Value CameraWrap::GetWidth(const Napi::CallbackInfo& info)
     return Napi::Number::New(env, width);
 }
 
+Napi::Value CameraWrap::StartTracking(const Napi::CallbackInfo& info)
+{
+    Napi::Env env = info.Env();
+    int res = this->camera->startTracking();
+    return Napi::Number::New(env, res);
+}
+
+Napi::Value CameraWrap::StopTracking(const Napi::CallbackInfo& info)
+{
+    Napi::Env env = info.Env();
+    int res = this->camera->stopTracking();
+    return Napi::Number::New(env, res);
+}
+
 Napi::Value CameraWrap::GetHeight(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
     int height = this->camera->getHeight();
     return Napi::Number::New(env, height);
-}
-
-Napi::Value CameraWrap::GetFps(const Napi::CallbackInfo& info)
-{
-    Napi::Env env = info.Env();
-    int fps = this->camera->getFps();
-    return Napi::Number::New(env, fps);
 }
 
 Napi::Value CameraWrap::AddEventListener(const Napi::CallbackInfo& info)
@@ -118,6 +170,7 @@ Napi::Value CameraWrap::AddEventListener(const Napi::CallbackInfo& info)
     std::string eventNameStr = eventName.Utf8Value();
     if (eventNameStr != "frame")
         return Napi::Boolean::New(env, false);
+
     Napi::FunctionReference* ref = new Napi::FunctionReference();
     *ref = Napi::Persistent(callback);
     this->frameListeners.push_back(ref);
