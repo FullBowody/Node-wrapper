@@ -1,5 +1,7 @@
 #include "EngineWrap.hpp"
 #include "CameraWrap.hpp"
+#include "PluginWrap.hpp"
+#include <iostream>
 
 Napi::FunctionReference* EngineWrap::constructor = nullptr;
 
@@ -27,7 +29,8 @@ Napi::Object EngineWrap::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod("createCamera", &EngineWrap::CreateCamera),
         InstanceMethod("getCamera", &EngineWrap::GetCamera),
         InstanceMethod("getCameras", &EngineWrap::GetCameras),
-        InstanceMethod("destroyCamera", &EngineWrap::DestroyCamera)
+        InstanceMethod("destroyCamera", &EngineWrap::DestroyCamera),
+        InstanceMethod("getPlugins", &EngineWrap::GetPlugins),
     });
 
     constructor = new Napi::FunctionReference();
@@ -109,6 +112,20 @@ Napi::Value EngineWrap::DestroyCamera(const Napi::CallbackInfo& info)
     CameraWrap* cameraWrap = CameraWrap::FromObject(wrapper);
     this->engine->destroyCamera(cameraWrap->getCamera());
     return Napi::Boolean::New(env, true);
+}
+
+Napi::Value EngineWrap::GetPlugins(const Napi::CallbackInfo& info)
+{
+    Napi::Env env = info.Env();
+    PluginProvider& pluginProvider = this->engine->getPluginProvider();
+    std::vector<PluginDescriptor> plugins = pluginProvider.getPlugins();
+    Napi::Array arr = Napi::Array::New(env, plugins.size());
+    for (int i = 0; i < plugins.size(); i++)
+    {
+        arr.Set(i, PluginWrap::NewInstance(env, plugins[i]));
+    }
+    return arr;
+
 }
 
 Engine* EngineWrap::getEngine()

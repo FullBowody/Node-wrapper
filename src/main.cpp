@@ -2,6 +2,7 @@
 #include "EngineLoader.hpp"
 #include "EngineWrap.hpp"
 #include "CameraWrap.hpp"
+#include "PluginWrap.hpp"
 
 EngineLoader* loader = nullptr;
 
@@ -53,6 +54,7 @@ Napi::Object Register(Napi::Env env, Napi::Object exports)
 
     EngineWrap::Init(env, exports);
     CameraWrap::Init(env, exports);
+    PluginWrap::Init(env, exports);
 
     return exports;
 }

@@ -25,5 +25,7 @@ public:
     Napi::Value GetCameras(const Napi::CallbackInfo& info);
     Napi::Value DestroyCamera(const Napi::CallbackInfo& info);
 
+    Napi::Value GetPlugins(const Napi::CallbackInfo& info);
+
     Engine* getEngine();
 };
