@@ -6,7 +6,7 @@ class EngineWrap: public Napi::ObjectWrap<EngineWrap>
 {
 private:
     static Napi::FunctionReference* constructor;
-    Engine* engine;
+    Engine* engine = nullptr;
 
 public:
     static Napi::Value NewInstance(Napi::Env env, Engine* engine);
@@ -26,6 +26,7 @@ public:
     Napi::Value DestroyCamera(const Napi::CallbackInfo& info);
 
     Napi::Value GetPlugins(const Napi::CallbackInfo& info);
+    Napi::Value GetScene(const Napi::CallbackInfo& info);
 
     Engine* getEngine();
 };

@@ -6,7 +6,7 @@ class CameraWrap: public Napi::ObjectWrap<CameraWrap>
 {
 private:
     static Napi::FunctionReference* constructor;
-    Camera* camera;
+    Camera* camera = nullptr;
 
     std::vector<Napi::FunctionReference*> frameListeners;
 

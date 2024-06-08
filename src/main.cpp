@@ -3,6 +3,11 @@
 #include "EngineWrap.hpp"
 #include "CameraWrap.hpp"
 #include "PluginWrap.hpp"
+#include "SceneWrap.hpp"
+#include "PoseWrap.hpp"
+#include "Vec3Wrap.hpp"
+#include "QuaternionWrap.hpp"
+#include "MarkerWrap.hpp"
 
 EngineLoader* loader = nullptr;
 
@@ -55,6 +60,11 @@ Napi::Object Register(Napi::Env env, Napi::Object exports)
     EngineWrap::Init(env, exports);
     CameraWrap::Init(env, exports);
     PluginWrap::Init(env, exports);
+    SceneWrap::Init(env, exports);
+    PoseWrap::Init(env, exports);
+    Vec3Wrap::Init(env, exports);
+    QuaternionWrap::Init(env, exports);
+    MarkerWrap::Init(env, exports);
 
     return exports;
 }

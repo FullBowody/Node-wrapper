@@ -6,7 +6,7 @@ class PluginWrap: public Napi::ObjectWrap<PluginWrap>
 {
 private:
     static Napi::FunctionReference* constructor;
-    PluginDescriptor* descriptor;
+    PluginDescriptor* descriptor = nullptr;
 
 public:
     static Napi::Value NewInstance(Napi::Env env, PluginDescriptor descriptor);
