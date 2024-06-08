@@ -107,10 +107,9 @@ Napi::Value EngineWrap::GetCameras(const Napi::CallbackInfo& info)
 Napi::Value EngineWrap::DestroyCamera(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
-    Napi::Object wrapper = info[0].As<Napi::Object>();
-    CameraWrap* cameraWrap = CameraWrap::FromObject(wrapper);
-    this->engine->destroyCamera(cameraWrap->getCamera());
-    return Napi::Boolean::New(env, true);
+    int index = info[0].As<Napi::Number>();
+    bool res = this->engine->destroyCamera(index);
+    return Napi::Boolean::New(env, res);
 }
 
 Napi::Value EngineWrap::GetPlugins(const Napi::CallbackInfo& info)
@@ -131,7 +130,7 @@ Napi::Value EngineWrap::GetScene(const Napi::CallbackInfo& info)
     return SceneWrap::NewInstance(env, scene);
 }
 
-Engine* EngineWrap::getEngine()
+Engine& EngineWrap::getEngine()
 {
-    return this->engine;
+    return *this->engine;
 }

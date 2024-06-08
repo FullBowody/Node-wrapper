@@ -30,5 +30,5 @@ public:
     Napi::Value getMarker(const Napi::CallbackInfo& info);
     Napi::Value getMarkers(const Napi::CallbackInfo& info);
 
-    Scene* getScene();
+    const Scene& getScene();
 };

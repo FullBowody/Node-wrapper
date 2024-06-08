@@ -116,7 +116,7 @@ Napi::Value QuaternionWrap::getW(const Napi::CallbackInfo& info)
     return Napi::Number::New(env, quat->w);
 }
 
-Quaternion* QuaternionWrap::getQuaternion()
+const Quaternion& QuaternionWrap::getQuaternion()
 {
-    return quat;
+    return *quat;
 }

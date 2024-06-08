@@ -92,7 +92,7 @@ Napi::Value PluginWrap::getType(const Napi::CallbackInfo& info)
     return Napi::String::New(info.Env(), strType);
 }
 
-PluginDescriptor* PluginWrap::getPluginDescriptor()
+const PluginDescriptor& PluginWrap::getPluginDescriptor()
 {
-    return this->descriptor;
+    return *this->descriptor;
 }

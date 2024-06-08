@@ -25,5 +25,5 @@ public:
     Napi::Value getZ(const Napi::CallbackInfo& info);
     Napi::Value getW(const Napi::CallbackInfo& info);
 
-    Quaternion* getQuaternion();
+    const Quaternion& getQuaternion();
 };

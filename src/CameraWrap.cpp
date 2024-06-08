@@ -177,7 +177,7 @@ Napi::Value CameraWrap::AddEventListener(const Napi::CallbackInfo& info)
     return Napi::Boolean::New(env, true);
 }
 
-Camera* CameraWrap::getCamera()
+const Camera& CameraWrap::getCamera()
 {
-    return this->camera;
+    return *this->camera;
 }

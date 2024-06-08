@@ -23,5 +23,5 @@ public:
     Napi::Value getY(const Napi::CallbackInfo& info);
     Napi::Value getZ(const Napi::CallbackInfo& info);
 
-    Vec3f* getVec3f();
+    const Vec3f& getVec3f();
 };

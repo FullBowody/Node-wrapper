@@ -48,7 +48,7 @@ Napi::Value DestroyEngine(const Napi::CallbackInfo& info)
 
     Napi::Object wrapper = info[0].As<Napi::Object>();
     EngineWrap* engineWrap = Napi::ObjectWrap<EngineWrap>::Unwrap(wrapper);
-    loader->destroyEngine(engineWrap->getEngine());
+    loader->destroyEngine(&engineWrap->getEngine());
     return Napi::Boolean::New(env, true);
 }
 

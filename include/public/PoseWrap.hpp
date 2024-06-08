@@ -21,5 +21,5 @@ public:
     Napi::Value setRotation(const Napi::CallbackInfo& info);
     Napi::Value getRotation(const Napi::CallbackInfo& info);
 
-    Pose* getPose();
+    const Pose& getPose();
 };

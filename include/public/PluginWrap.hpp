@@ -22,5 +22,5 @@ public:
     Napi::Value getVersion(const Napi::CallbackInfo& info);
     Napi::Value getType(const Napi::CallbackInfo& info);
 
-    PluginDescriptor* getPluginDescriptor();
+    const PluginDescriptor& getPluginDescriptor();
 };

@@ -28,5 +28,5 @@ public:
     Napi::Value GetPlugins(const Napi::CallbackInfo& info);
     Napi::Value GetScene(const Napi::CallbackInfo& info);
 
-    Engine* getEngine();
+    Engine& getEngine();
 };

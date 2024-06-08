@@ -101,7 +101,7 @@ Napi::Value Vec3Wrap::getZ(const Napi::CallbackInfo& info)
     return Napi::Number::New(env, vec->z);
 }
 
-Vec3f* Vec3Wrap::getVec3f()
+const Vec3f& Vec3Wrap::getVec3f()
 {
-    return vec;
+    return *vec;
 }

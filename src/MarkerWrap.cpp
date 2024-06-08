@@ -44,8 +44,8 @@ MarkerWrap::MarkerWrap(const Napi::CallbackInfo& info)
     if (info.Length() == 2)
     {
         int id = info[0].As<Napi::Number>().Int32Value();
-        Pose* pose = PoseWrap::FromObject(info[1].As<Napi::Object>())->getPose();
-        this->marker = new Marker(id, *pose);
+        const Pose& pose = PoseWrap::FromObject(info[1].As<Napi::Object>())->getPose();
+        this->marker = new Marker(id, pose);
     }
     else if (info.Length() == 1)
     {
@@ -80,10 +80,12 @@ Napi::Value MarkerWrap::setId(const Napi::CallbackInfo& info)
 Napi::Value MarkerWrap::setPose(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
-    Pose* pose = PoseWrap::FromObject(info[0].As<Napi::Object>())->getPose();
-    if (pose == nullptr) return Napi::Boolean::New(env, false);
-    marker->setPose(*pose);
-    emitEvent(info, toString(POSE_UPDATED), PoseWrap::NewInstance(env, pose));
+    Napi::HandleScope scope(env);
+
+    const Pose& pose = PoseWrap::FromObject(info[0].As<Napi::Object>())->getPose();
+    marker->setPose(pose);
+
+    emitEvent(info, toString(POSE_UPDATED), PoseWrap::NewInstance(env, new Pose(pose)));
     return Napi::Boolean::New(env, true);
 }
 
@@ -99,7 +101,7 @@ Napi::Value MarkerWrap::getPose(const Napi::CallbackInfo& info)
     return PoseWrap::NewInstance(env, new Pose(marker->getPose()));
 }
 
-Marker* MarkerWrap::getMarker()
+const Marker& MarkerWrap::getMarker()
 {
-    return marker;
+    return *marker;
 }

@@ -29,5 +29,5 @@ public:
     Napi::Value getId(const Napi::CallbackInfo& info);
     Napi::Value getPose(const Napi::CallbackInfo& info);
 
-    Marker* getMarker();
+    const Marker& getMarker();
 };

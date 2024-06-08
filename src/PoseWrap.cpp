@@ -43,9 +43,9 @@ PoseWrap::PoseWrap(const Napi::CallbackInfo& info)
 
     if (info.Length() == 2)
     {
-        Vec3f* vec = Vec3Wrap::FromObject(info[0].As<Napi::Object>())->getVec3f();
-        Quaternion* quat = QuaternionWrap::FromObject(info[1].As<Napi::Object>())->getQuaternion();
-        this->pose = new Pose(*vec, *quat);
+        const Vec3f& vec = Vec3Wrap::FromObject(info[0].As<Napi::Object>())->getVec3f();
+        const Quaternion& quat = QuaternionWrap::FromObject(info[1].As<Napi::Object>())->getQuaternion();
+        this->pose = new Pose(vec, quat);
     }
     else if (info.Length() == 1)
     {
@@ -63,10 +63,10 @@ PoseWrap::~PoseWrap()
 Napi::Value PoseWrap::setPosition(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
 
-    Vec3f* vec = Vec3Wrap::FromObject(info[0].As<Napi::Object>())->getVec3f();
-    if (vec == nullptr) return Napi::Boolean::New(env, false);
-    pose->setPosition(*vec);
+    const Vec3f& vec = Vec3Wrap::FromObject(info[0].As<Napi::Object>())->getVec3f();
+    pose->setPosition(vec);
 
     return Napi::Boolean::New(env, true);
 }
@@ -74,17 +74,16 @@ Napi::Value PoseWrap::setPosition(const Napi::CallbackInfo& info)
 Napi::Value PoseWrap::getPosition(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
-    Vec3f* vec = new Vec3f(pose->getPosition());
-    return Vec3Wrap::NewInstance(env, vec);
+    return Vec3Wrap::NewInstance(env, new Vec3f(pose->getPosition()));
 }
 
 Napi::Value PoseWrap::setRotation(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
 
-    Quaternion* quat = QuaternionWrap::FromObject(info[0].As<Napi::Object>())->getQuaternion();
-    if (quat == nullptr) return Napi::Boolean::New(env, false);
-    pose->setRotation(*quat);
+    const Quaternion& quat = QuaternionWrap::FromObject(info[0].As<Napi::Object>())->getQuaternion();
+    pose->setRotation(quat);
 
     return Napi::Boolean::New(env, true);
 }
@@ -92,11 +91,10 @@ Napi::Value PoseWrap::setRotation(const Napi::CallbackInfo& info)
 Napi::Value PoseWrap::getRotation(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
-    Quaternion* quat = new Quaternion(pose->getRotation());
-    return QuaternionWrap::NewInstance(env, quat);
+    return QuaternionWrap::NewInstance(env, new Quaternion(pose->getRotation()));
 }
 
-Pose* PoseWrap::getPose()
+const Pose& PoseWrap::getPose()
 {
-    return pose;
+    return *pose;
 }

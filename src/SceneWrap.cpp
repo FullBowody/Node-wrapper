@@ -67,9 +67,9 @@ Napi::Value SceneWrap::createMarker(const Napi::CallbackInfo& info)
     Napi::HandleScope scope(env);
 
     int id = info[0].As<Napi::Number>().Int32Value();
-    Pose* pose = PoseWrap::FromObject(info[1].As<Napi::Object>())->getPose();
+    const Pose& pose = PoseWrap::FromObject(info[1].As<Napi::Object>())->getPose();
 
-    Marker* marker = scene->createMarker(id, *pose);
+    Marker* marker = scene->createMarker(id, pose);
     if (marker == nullptr) return env.Null();
 
     Napi::Value markerWrap = MarkerWrap::NewInstance(env, marker);
@@ -127,7 +127,7 @@ Napi::Value SceneWrap::getMarkers(const Napi::CallbackInfo& info)
     return arr;
 }
 
-Scene* SceneWrap::getScene()
+const Scene& SceneWrap::getScene()
 {
-    return scene;
+    return *scene;
 }

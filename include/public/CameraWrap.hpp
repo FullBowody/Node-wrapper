@@ -28,5 +28,5 @@ public:
 
     Napi::Value AddEventListener(const Napi::CallbackInfo& info);
 
-    Camera* getCamera();
+    const Camera& getCamera();
 };
