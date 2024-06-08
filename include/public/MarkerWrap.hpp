@@ -1,12 +1,20 @@
 #pragma once
 #include <napi.h>
 #include "Struct/Marker.hpp"
+#include "EventEmitter.hpp"
 
-class MarkerWrap: public Napi::ObjectWrap<MarkerWrap>
+class MarkerWrap: public EventEmitter, public Napi::ObjectWrap<MarkerWrap>
 {
 private:
     static Napi::FunctionReference* constructor;
     Marker* marker = nullptr;
+
+    enum MarkerEvent
+    {
+        ID_UPDATED,
+        POSE_UPDATED
+    };
+    std::string toString(MarkerEvent event);
 
 public:
     static Napi::Value NewInstance(Napi::Env env, Marker* marker);

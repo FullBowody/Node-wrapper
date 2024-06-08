@@ -21,6 +21,7 @@ MarkerWrap* MarkerWrap::FromObject(Napi::Object obj)
 Napi::Object MarkerWrap::Init(Napi::Env env, Napi::Object exports)
 {
     Napi::Function func = DefineClass(env, "Marker", {
+        InstanceMethod("on", &EventEmitter::on),
         InstanceMethod("setId", &MarkerWrap::setId),
         InstanceMethod("setPose", &MarkerWrap::setPose),
         InstanceMethod("getId", &MarkerWrap::getId),
@@ -58,10 +59,21 @@ MarkerWrap::~MarkerWrap()
 {
 }
 
+std::string MarkerWrap::toString(MarkerEvent event)
+{
+    switch (event)
+    {
+    case ID_UPDATED: return "idUpdated";
+    case POSE_UPDATED: return "poseUpdated";
+    default: return "";
+    }
+}
+
 Napi::Value MarkerWrap::setId(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
     marker->setId(info[0].As<Napi::Number>().Int32Value());
+    emitEvent(info, toString(ID_UPDATED), Napi::Number::New(env, marker->getId()));
     return Napi::Boolean::New(env, true);
 }
 
@@ -71,6 +83,7 @@ Napi::Value MarkerWrap::setPose(const Napi::CallbackInfo& info)
     Pose* pose = PoseWrap::FromObject(info[0].As<Napi::Object>())->getPose();
     if (pose == nullptr) return Napi::Boolean::New(env, false);
     marker->setPose(*pose);
+    emitEvent(info, toString(POSE_UPDATED), PoseWrap::NewInstance(env, pose));
     return Napi::Boolean::New(env, true);
 }
 
