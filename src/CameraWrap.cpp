@@ -153,8 +153,7 @@ Napi::Value CameraWrap::StopTracking(const Napi::CallbackInfo& info)
 Napi::Value CameraWrap::GetId(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
-    int id = camera->getId();
-    return Napi::Number::New(env, id);
+    return Napi::Number::New(env, (int) camera);
 }
 
 Napi::Value CameraWrap::GetWidth(const Napi::CallbackInfo& info)
