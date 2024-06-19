@@ -22,7 +22,7 @@ SceneWrap* SceneWrap::FromObject(Napi::Object obj)
 Napi::Object SceneWrap::Init(Napi::Env env, Napi::Object exports)
 {
     Napi::Function func = DefineClass(env, "Scene", {
-        InstanceMethod("on", &EventEmitter::on),
+        InstanceMethod("on", &EventEmitter::On),
         InstanceMethod("createMarker", &SceneWrap::createMarker),
         InstanceMethod("destroyMarker", &SceneWrap::destroyMarker),
         InstanceMethod("findMarker", &SceneWrap::findMarker),

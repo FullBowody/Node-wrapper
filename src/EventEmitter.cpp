@@ -20,7 +20,7 @@ void EventEmitter::emitEvent(const Napi::CallbackInfo& info, std::string name, N
     func.Call({data});
 }
 
-Napi::Value EventEmitter::on(const Napi::CallbackInfo& info)
+Napi::Value EventEmitter::On(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);

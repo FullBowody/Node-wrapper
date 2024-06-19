@@ -15,5 +15,5 @@ public:
     EventEmitter();
     ~EventEmitter();
 
-    Napi::Value on(const Napi::CallbackInfo& info);
+    Napi::Value On(const Napi::CallbackInfo& info);
 };
