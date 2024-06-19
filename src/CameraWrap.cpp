@@ -29,6 +29,7 @@ Napi::Object CameraWrap::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod("startTracking", &CameraWrap::StartTracking),
         InstanceMethod("stopTracking", &CameraWrap::StopTracking),
         InstanceMethod("addEventListener", &CameraWrap::AddEventListener),
+        InstanceMethod("getId", &CameraWrap::GetId),
         InstanceMethod("getWidth", &CameraWrap::GetWidth),
         InstanceMethod("getHeight", &CameraWrap::GetHeight),
         InstanceMethod("getPose", &CameraWrap::GetPose)
@@ -153,7 +154,8 @@ Napi::Value CameraWrap::StopTracking(const Napi::CallbackInfo& info)
 Napi::Value CameraWrap::GetId(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
-    return Napi::Number::New(env, (int) camera);
+    int id = camera->getId();
+    return Napi::Number::New(env, id);
 }
 
 Napi::Value CameraWrap::GetWidth(const Napi::CallbackInfo& info)
