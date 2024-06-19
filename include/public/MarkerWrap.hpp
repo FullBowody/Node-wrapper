@@ -24,10 +24,10 @@ public:
     MarkerWrap(const Napi::CallbackInfo& info);
     ~MarkerWrap();
 
-    Napi::Value setId(const Napi::CallbackInfo& info);
-    Napi::Value setPose(const Napi::CallbackInfo& info);
-    Napi::Value getId(const Napi::CallbackInfo& info);
-    Napi::Value getPose(const Napi::CallbackInfo& info);
+    Napi::Value SetId(const Napi::CallbackInfo& info);
+    Napi::Value SetPose(const Napi::CallbackInfo& info);
+    Napi::Value GetId(const Napi::CallbackInfo& info);
+    Napi::Value GetPose(const Napi::CallbackInfo& info);
 
     const Marker& getMarker();
 };

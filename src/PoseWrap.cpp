@@ -8,7 +8,7 @@ Napi::Value PoseWrap::NewInstance(Napi::Env env, Pose* pose)
 {
     Napi::HandleScope scope(env);
 
-    if (constructor == nullptr)
+    if (constructor == nullptr || pose == nullptr)
         return env.Null();
 
     return constructor->New({Napi::External<Pose>::New(env, pose)});

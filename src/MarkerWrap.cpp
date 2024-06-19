@@ -7,7 +7,7 @@ Napi::Value MarkerWrap::NewInstance(Napi::Env env, Marker* marker)
 {
     Napi::HandleScope scope(env);
 
-    if (constructor == nullptr)
+    if (constructor == nullptr || marker == nullptr)
         return env.Null();
 
     return constructor->New({Napi::External<Marker>::New(env, marker)});
@@ -21,11 +21,11 @@ MarkerWrap* MarkerWrap::FromObject(Napi::Object obj)
 Napi::Object MarkerWrap::Init(Napi::Env env, Napi::Object exports)
 {
     Napi::Function func = DefineClass(env, "Marker", {
-        InstanceMethod("on", &EventEmitter::on),
-        InstanceMethod("setId", &MarkerWrap::setId),
-        InstanceMethod("setPose", &MarkerWrap::setPose),
-        InstanceMethod("getId", &MarkerWrap::getId),
-        InstanceMethod("getPose", &MarkerWrap::getPose)
+        InstanceMethod("on", &EventEmitter::On),
+        InstanceMethod("setId", &MarkerWrap::SetId),
+        InstanceMethod("setPose", &MarkerWrap::SetPose),
+        InstanceMethod("getId", &MarkerWrap::GetId),
+        InstanceMethod("getPose", &MarkerWrap::GetPose)
     });
 
     constructor = new Napi::FunctionReference();
@@ -69,7 +69,7 @@ std::string MarkerWrap::toString(MarkerEvent event)
     }
 }
 
-Napi::Value MarkerWrap::setId(const Napi::CallbackInfo& info)
+Napi::Value MarkerWrap::SetId(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
     marker->setId(info[0].As<Napi::Number>().Int32Value());
@@ -77,7 +77,7 @@ Napi::Value MarkerWrap::setId(const Napi::CallbackInfo& info)
     return Napi::Boolean::New(env, true);
 }
 
-Napi::Value MarkerWrap::setPose(const Napi::CallbackInfo& info)
+Napi::Value MarkerWrap::SetPose(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
@@ -89,13 +89,13 @@ Napi::Value MarkerWrap::setPose(const Napi::CallbackInfo& info)
     return Napi::Boolean::New(env, true);
 }
 
-Napi::Value MarkerWrap::getId(const Napi::CallbackInfo& info)
+Napi::Value MarkerWrap::GetId(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
     return Napi::Number::New(env, marker->getId());
 }
 
-Napi::Value MarkerWrap::getPose(const Napi::CallbackInfo& info)
+Napi::Value MarkerWrap::GetPose(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
     return PoseWrap::NewInstance(env, new Pose(marker->getPose()));

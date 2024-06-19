@@ -23,8 +23,11 @@ public:
     Napi::Value StartTracking(const Napi::CallbackInfo& info);
     Napi::Value StopTracking(const Napi::CallbackInfo& info);
 
+    Napi::Value GetId(const Napi::CallbackInfo& info);
     Napi::Value GetWidth(const Napi::CallbackInfo& info);
     Napi::Value GetHeight(const Napi::CallbackInfo& info);
+    
+    Napi::Value GetPose(const Napi::CallbackInfo& info);
 
     Napi::Value AddEventListener(const Napi::CallbackInfo& info);
 
