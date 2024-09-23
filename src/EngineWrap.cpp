@@ -94,7 +94,7 @@ Napi::Value EngineWrap::GetCameras(const Napi::CallbackInfo& info)
     Napi::Env env = info.Env();
     std::vector<Camera*> cameras = this->engine->getCameras();
     Napi::Array arr = Napi::Array::New(env, cameras.size());
-    for (int i = 0; i < cameras.size(); i++)
+    for (size_t i = 0; i < cameras.size(); i++)
     {
         arr.Set(i, CameraWrap::NewInstance(env, cameras[i]));
     }
