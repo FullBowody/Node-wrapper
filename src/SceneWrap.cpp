@@ -121,7 +121,7 @@ Napi::Value SceneWrap::getMarkers(const Napi::CallbackInfo& info)
 
     std::vector<Marker*> markers = scene->getMarkers();
     Napi::Array arr = Napi::Array::New(env, markers.size());
-    for (int i = 0; i < markers.size(); i++)
+    for (size_t i = 0; i < markers.size(); i++)
         arr.Set(i, MarkerWrap::NewInstance(env, markers[i]));
 
     return arr;

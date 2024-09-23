@@ -80,7 +80,7 @@ Napi::Value PluginWrap::getVersion(const Napi::CallbackInfo& info)
 
 Napi::Value PluginWrap::getType(const Napi::CallbackInfo& info)
 {
-    Napi::Env env = info.Env();
+    // Napi::Env env = info.Env();
 
     std::string strType;
     switch (this->descriptor->getType())
