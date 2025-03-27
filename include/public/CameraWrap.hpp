@@ -1,35 +1,33 @@
 #pragma once
 #include <napi.h>
+#include <memory>
 #include "Camera/Camera.hpp"
 
 class CameraWrap: public Napi::ObjectWrap<CameraWrap>
 {
-private:
-    static Napi::FunctionReference* constructor;
-    Camera* camera = nullptr;
-
-    std::vector<Napi::FunctionReference*> frameListeners;
-
 public:
-    static Napi::Value NewInstance(Napi::Env env, Camera* camera);
-    static CameraWrap* FromObject(Napi::Object obj);
     static Napi::Object Init(Napi::Env env, Napi::Object exports);
+    static Napi::Value Create(const Napi::CallbackInfo& info);
+    static Napi::Value Wrap(Napi::Env env, std::shared_ptr<Camera> camera);
 
     CameraWrap(const Napi::CallbackInfo& info);
     ~CameraWrap();
 
-    Napi::Value SetParam(const Napi::CallbackInfo& info);
-    Napi::Value GetParam(const Napi::CallbackInfo& info);
-    Napi::Value StartTracking(const Napi::CallbackInfo& info);
-    Napi::Value StopTracking(const Napi::CallbackInfo& info);
+    Napi::Value getCapture(const Napi::CallbackInfo& info);
+    Napi::Value getName(const Napi::CallbackInfo& info);
 
-    Napi::Value GetId(const Napi::CallbackInfo& info);
-    Napi::Value GetWidth(const Napi::CallbackInfo& info);
-    Napi::Value GetHeight(const Napi::CallbackInfo& info);
-    
-    Napi::Value GetPose(const Napi::CallbackInfo& info);
+    Napi::Value useCapturePlugin(const Napi::CallbackInfo& info);
+    Napi::Value setName(const Napi::CallbackInfo& info);
 
-    Napi::Value AddEventListener(const Napi::CallbackInfo& info);
+    Napi::Value startPreview(const Napi::CallbackInfo& info);
+    Napi::Value stopPreview(const Napi::CallbackInfo& info);
 
-    const Camera& getCamera();
+    Napi::Value startTracking(const Napi::CallbackInfo& info);
+    Napi::Value stopTracking(const Napi::CallbackInfo& info);
+
+    const std::shared_ptr<Camera>& getCamera() { return camera; }
+
+private:
+    inline static Napi::FunctionReference* constructor = nullptr;
+    std::shared_ptr<Camera> camera;
 };

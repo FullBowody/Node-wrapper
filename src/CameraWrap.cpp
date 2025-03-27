@@ -1,38 +1,20 @@
-#include <memory.h>
 #include "CameraWrap.hpp"
-#include "PoseWrap.hpp"
-#include "Struct/Callback.hpp"
-#include "b64.h"
-
-Napi::FunctionReference* CameraWrap::constructor = nullptr;
-
-Napi::Value CameraWrap::NewInstance(Napi::Env env, Camera* camera)
-{
-    Napi::HandleScope scope(env);
-
-    if (constructor == nullptr || camera == nullptr)
-        return env.Null();
-
-    return constructor->New({Napi::External<Camera>::New(env, camera)});
-}
-
-CameraWrap* CameraWrap::FromObject(Napi::Object obj)
-{
-    return Napi::ObjectWrap<CameraWrap>::Unwrap(obj);
-}
+#include "CaptureWrap.hpp"
+#include "ParamWrap.hpp"
+#include "image_utils.hpp"
+#include "PluginHandleWrap.hpp"
 
 Napi::Object CameraWrap::Init(Napi::Env env, Napi::Object exports)
 {
     Napi::Function func = DefineClass(env, "Camera", {
-        InstanceMethod("setParam", &CameraWrap::SetParam),
-        InstanceMethod("getParam", &CameraWrap::GetParam),
-        InstanceMethod("startTracking", &CameraWrap::StartTracking),
-        InstanceMethod("stopTracking", &CameraWrap::StopTracking),
-        InstanceMethod("addEventListener", &CameraWrap::AddEventListener),
-        InstanceMethod("getId", &CameraWrap::GetId),
-        InstanceMethod("getWidth", &CameraWrap::GetWidth),
-        InstanceMethod("getHeight", &CameraWrap::GetHeight),
-        InstanceMethod("getPose", &CameraWrap::GetPose)
+        InstanceMethod("getCapture", &CameraWrap::getCapture),
+        InstanceMethod("getName", &CameraWrap::getName),
+        InstanceMethod("useCapturePlugin", &CameraWrap::useCapturePlugin),
+        InstanceMethod("setName", &CameraWrap::setName),
+        InstanceMethod("startPreview", &CameraWrap::startPreview),
+        InstanceMethod("stopPreview", &CameraWrap::stopPreview),
+        InstanceMethod("startTracking", &CameraWrap::startTracking),
+        InstanceMethod("stopTracking", &CameraWrap::stopTracking)
     });
 
     constructor = new Napi::FunctionReference();
@@ -42,158 +24,87 @@ Napi::Object CameraWrap::Init(Napi::Env env, Napi::Object exports)
     return exports;
 }
 
+Napi::Value CameraWrap::Create(const Napi::CallbackInfo& info)
+{
+    Napi::Env env = info.Env();
+    return constructor->New({});
+}
+
+Napi::Value CameraWrap::Wrap(Napi::Env env, std::shared_ptr<Camera> camera)
+{
+    Napi::Object obj = constructor->New({});
+    CameraWrap* wrapper = Napi::ObjectWrap<CameraWrap>::Unwrap(obj);
+    wrapper->camera = camera;
+    return obj;
+}
+
 CameraWrap::CameraWrap(const Napi::CallbackInfo& info)
     : Napi::ObjectWrap<CameraWrap>(info)
 {
     Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
-
-    Napi::External<Camera> ext = info[0].As<Napi::External<Camera>>();
-    camera = ext.Data();
-
-    camera->onPreview(new CallbackFunction<Frame>([this](const Frame& frame) {
-        int size;
-        unsigned char* data = frame.encodeJPG(25, &size);
-        if (data == nullptr)
-        {
-            std::cout << "=>  data is null" << std::endl;
-            return;
-        }
-        char* b64 = b64_encode(data, size);
-        delete[] data;
-
-        std::string imgPrefix = "data:image/jpeg;base64,";
-
-        Napi::Env env = this->Env();
-        Napi::Object obj = Napi::Object::New(env);
-        obj.Set("width", Napi::Number::New(env, frame.getWidth()));
-        obj.Set("height", Napi::Number::New(env, frame.getHeight()));
-        obj.Set("data", Napi::String::New(env, imgPrefix + b64));
-
-        for (Napi::FunctionReference* ref : this->frameListeners)
-        {
-            ref->Call({obj});
-        }
-    }));
+    // Napi::TypeError::New(env, "Use the engine.createCamera method to create a Camera object").ThrowAsJavaScriptException();
 }
 
 CameraWrap::~CameraWrap()
 {
-    
+    // nothing to delete : shared_ptr will take care of it
 }
 
-Napi::Value CameraWrap::SetParam(const Napi::CallbackInfo& info)
+Napi::Value CameraWrap::getCapture(const Napi::CallbackInfo& info)
 {
-    Napi::Env env = info.Env();
-    std::string paramName = info[0].As<Napi::String>().Utf8Value();
-    Napi::Value paramValue = info[1];
-    Param* param = camera->getParameter(paramName);
-    if (param == nullptr)
-        return Napi::Boolean::New(env, false);
-    
-    switch (param->getType())
+    if (this->camera->getCapture() == nullptr)
+        return info.Env().Null();
+    return CaptureWrap::Wrap(info.Env(), this->camera->getCapture());
+}
+
+Napi::Value CameraWrap::getName(const Napi::CallbackInfo& info)
+{
+    return Napi::String::New(info.Env(), this->camera->getName());
+}
+
+Napi::Value CameraWrap::useCapturePlugin(const Napi::CallbackInfo& info)
+{
+    if (info.Length() < 1 || !info[0].IsObject())
     {
-    case ParamType::INT:
-        param->setValue(paramValue.As<Napi::Number>().Int32Value());
-        break;
-    case ParamType::FLOAT: 
-        param->setValue(paramValue.As<Napi::Number>().FloatValue());
-        break;
-    case ParamType::BOOL:
-        param->setValue(paramValue.As<Napi::Boolean>().Value());
-        break;
-    case ParamType::STRING:
-        param->setValue(paramValue.As<Napi::String>().Utf8Value());
-        break;
-    case ParamType::ENUM:
-        param->setValue(paramValue.As<Napi::Number>().Int32Value());
-        break;
-    default: return Napi::Boolean::New(env, false);
+        Napi::TypeError::New(info.Env(), "Expected a PluginHandle object").ThrowAsJavaScriptException();
+        return info.Env().Undefined();
     }
-    return Napi::Boolean::New(env, true);
+    PluginHandleWrap* pluginHandleWrap = Napi::ObjectWrap<PluginHandleWrap>::Unwrap(info[0].As<Napi::Object>());
+    this->camera->useCapturePlugin(pluginHandleWrap->getPluginHandle());
+    return info.Env().Undefined();
 }
 
-Napi::Value CameraWrap::GetParam(const Napi::CallbackInfo& info)
+Napi::Value CameraWrap::setName(const Napi::CallbackInfo& info)
 {
-    Napi::Env env = info.Env();
-    std::string paramName = info[0].As<Napi::String>().Utf8Value();
-    Param* param = camera->getParameter(paramName);
-    if (param == nullptr)
-        return Napi::Boolean::New(env, false);
-    
-    switch (param->getType())
+    if (info.Length() < 1 || !info[0].IsString())
     {
-    case ParamType::INT:
-        return Napi::Number::New(env, param->asInt());
-    case ParamType::FLOAT: 
-        return Napi::Number::New(env, param->asFloat());
-    case ParamType::BOOL:
-        return Napi::Boolean::New(env, param->asBool());
-    case ParamType::STRING:
-        return Napi::String::New(env, param->asString());
-    case ParamType::ENUM:
-        return Napi::Number::New(env, param->asInt());
-    default: return env.Null();
+        Napi::TypeError::New(info.Env(), "String expected").ThrowAsJavaScriptException();
+        return info.Env().Undefined();
     }
+    this->camera->setName(info[0].As<Napi::String>().Utf8Value());
+    return info.Env().Undefined();
 }
 
-Napi::Value CameraWrap::StartTracking(const Napi::CallbackInfo& info)
+Napi::Value CameraWrap::startPreview(const Napi::CallbackInfo& info)
 {
-    Napi::Env env = info.Env();
-    int res = camera->startTracking();
-    return Napi::Number::New(env, res);
+    FBError err = this->camera->startPreview();
+    return Napi::Boolean::New(info.Env(), err == FBError::OK);
 }
 
-Napi::Value CameraWrap::StopTracking(const Napi::CallbackInfo& info)
+Napi::Value CameraWrap::stopPreview(const Napi::CallbackInfo& info)
 {
-    Napi::Env env = info.Env();
-    int res = camera->stopTracking();
-    return Napi::Number::New(env, res);
+    FBError err = this->camera->stopPreview();
+    return Napi::Boolean::New(info.Env(), err == FBError::OK);
 }
 
-Napi::Value CameraWrap::GetId(const Napi::CallbackInfo& info)
+Napi::Value CameraWrap::startTracking(const Napi::CallbackInfo& info)
 {
-    Napi::Env env = info.Env();
-    int id = camera->getId();
-    return Napi::Number::New(env, id);
+    FBError err = this->camera->startTracking();
+    return Napi::Boolean::New(info.Env(), err == FBError::OK);
 }
 
-Napi::Value CameraWrap::GetWidth(const Napi::CallbackInfo& info)
+Napi::Value CameraWrap::stopTracking(const Napi::CallbackInfo& info)
 {
-    Napi::Env env = info.Env();
-    int width = camera->getWidth();
-    return Napi::Number::New(env, width);
-}
-
-Napi::Value CameraWrap::GetHeight(const Napi::CallbackInfo& info)
-{
-    Napi::Env env = info.Env();
-    int height = camera->getHeight();
-    return Napi::Number::New(env, height);
-}
-
-Napi::Value CameraWrap::GetPose(const Napi::CallbackInfo& info)
-{
-    Napi::Env env = info.Env();
-    return PoseWrap::NewInstance(env, nullptr); // TODO : Change
-}
-
-Napi::Value CameraWrap::AddEventListener(const Napi::CallbackInfo& info)
-{
-    Napi::Env env = info.Env();
-    Napi::String eventName = info[0].As<Napi::String>();
-    Napi::Function callback = info[1].As<Napi::Function>();
-    std::string eventNameStr = eventName.Utf8Value();
-    if (eventNameStr != "frame")
-        return Napi::Boolean::New(env, false);
-
-    Napi::FunctionReference* ref = new Napi::FunctionReference();
-    *ref = Napi::Persistent(callback);
-    this->frameListeners.push_back(ref);
-    return Napi::Boolean::New(env, true);
-}
-
-const Camera& CameraWrap::getCamera()
-{
-    return *camera;
+    FBError err = this->camera->stopTracking();
+    return Napi::Boolean::New(info.Env(), err == FBError::OK);
 }

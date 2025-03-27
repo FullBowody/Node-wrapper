@@ -1,13 +1,15 @@
 #include <napi.h>
+#include <iostream>
 #include "EngineLoader.hpp"
 #include "EngineWrap.hpp"
-#include "CameraWrap.hpp"
-#include "PluginWrap.hpp"
-#include "SceneWrap.hpp"
-#include "PoseWrap.hpp"
 #include "Vec3Wrap.hpp"
-#include "QuaternionWrap.hpp"
-#include "MarkerWrap.hpp"
+#include "CaptureWrap.hpp"
+#include "ParamWrap.hpp"
+#include "CameraWrap.hpp"
+#include "PluginDescriptionWrap.hpp"
+#include "PluginHandleWrap.hpp"
+#include "CaptureJointWrap.hpp"
+#include "CaptureSkeletonWrap.hpp"
 
 EngineLoader* loader = nullptr;
 
@@ -22,7 +24,7 @@ Napi::Value CreateEngine(const Napi::CallbackInfo& info)
         std::cerr << "Error : Engine already created" << std::endl;
         return env.Null();
     }
-
+    
     if (info.Length() > 0)
         loader = new EngineLoader(info[0].As<Napi::String>().Utf8Value());
     else loader = new EngineLoader();
@@ -34,7 +36,8 @@ Napi::Value CreateEngine(const Napi::CallbackInfo& info)
         loader = nullptr;
         return env.Null();
     }
-    return EngineWrap::NewInstance(env, engine);
+    
+    return EngineWrap::Wrap(env, engine);
 }
 
 Napi::Value DestroyEngine(const Napi::CallbackInfo& info)
@@ -48,7 +51,7 @@ Napi::Value DestroyEngine(const Napi::CallbackInfo& info)
 
     Napi::Object wrapper = info[0].As<Napi::Object>();
     EngineWrap* engineWrap = Napi::ObjectWrap<EngineWrap>::Unwrap(wrapper);
-    loader->destroyEngine(&engineWrap->getEngine());
+    loader->destroyEngine(engineWrap->getEngine());
     return Napi::Boolean::New(env, true);
 }
 
@@ -57,14 +60,15 @@ Napi::Object Register(Napi::Env env, Napi::Object exports)
     register("createEngine", CreateEngine);
     register("destroyEngine", DestroyEngine);
 
-    EngineWrap::Init(env, exports);
-    CameraWrap::Init(env, exports);
-    PluginWrap::Init(env, exports);
-    SceneWrap::Init(env, exports);
-    PoseWrap::Init(env, exports);
     Vec3Wrap::Init(env, exports);
-    QuaternionWrap::Init(env, exports);
-    MarkerWrap::Init(env, exports);
+    EngineWrap::Init(env, exports);
+    CaptureWrap::Init(env, exports);
+    CameraWrap::Init(env, exports);
+    ParamWrap::Init(env, exports);
+    PluginDescriptionWrap::Init(env, exports);
+    PluginHandleWrap::Init(env, exports);
+    CaptureJointWrap::Init(env, exports);
+    CaptureSkeletonWrap::Init(env, exports);
 
     return exports;
 }
