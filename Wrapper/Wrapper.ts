@@ -63,9 +63,9 @@ export interface Camera {
 };
 
 export interface Engine {
-    update(deltaTime: number);
+    update(deltaTime: number): void;
     createCamera(): Camera;
-    destroyCamera(camera: Camera);
+    destroyCamera(camera: Camera): void;
     getCameras(): Camera[];
     getCamera(index: number): Camera;
     getPlugins(): PluginDescription[];
@@ -90,6 +90,10 @@ export class Wrapper {
                 }
             } catch (e) { reject(e); }
         });
+    }
+
+    unloadEngine(engine: Engine): void {
+        this.bridge.destroyEngine(engine);
     }
 }
 
