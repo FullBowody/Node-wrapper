@@ -63,7 +63,8 @@ export interface Camera {
 };
 
 export interface Engine {
-    update(deltaTime: number): void;
+    start(): void;
+    stop(): void;
     createCamera(): Camera;
     destroyCamera(camera: Camera): void;
     getCameras(): Camera[];
