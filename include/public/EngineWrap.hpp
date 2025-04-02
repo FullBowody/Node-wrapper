@@ -13,7 +13,8 @@ public:
     EngineWrap(const Napi::CallbackInfo& info);
     ~EngineWrap();
 
-    Napi::Value update(const Napi::CallbackInfo& info);
+    Napi::Value start(const Napi::CallbackInfo& info);
+    Napi::Value stop(const Napi::CallbackInfo& info);
 
     Napi::Value createCamera(const Napi::CallbackInfo& info);
     Napi::Value destroyCamera(const Napi::CallbackInfo& info);

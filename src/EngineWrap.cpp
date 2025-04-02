@@ -5,7 +5,8 @@
 Napi::Object EngineWrap::Init(Napi::Env env, Napi::Object exports)
 {
     Napi::Function func = DefineClass(env, "Engine", {
-        InstanceMethod("update", &EngineWrap::update),
+        InstanceMethod("start", &EngineWrap::start),
+        InstanceMethod("stop", &EngineWrap::stop),
         InstanceMethod("createCamera", &EngineWrap::createCamera),
         InstanceMethod("destroyCamera", &EngineWrap::destroyCamera),
         InstanceMethod("getCameras", &EngineWrap::getCameras),
@@ -51,11 +52,17 @@ EngineWrap::~EngineWrap()
     }
 }
 
-Napi::Value EngineWrap::update(const Napi::CallbackInfo& info)
+Napi::Value EngineWrap::start(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
-    float dt = info[0].As<Napi::Number>().FloatValue();
-    FBError res = this->engine->update(dt);
+    FBError res = this->engine->start();
+    return Napi::Number::New(env, res);
+}
+
+Napi::Value EngineWrap::stop(const Napi::CallbackInfo& info)
+{
+    Napi::Env env = info.Env();
+    FBError res = this->engine->stop();
     return Napi::Number::New(env, res);
 }
 

@@ -67,7 +67,7 @@ export interface Engine {
     createCamera(): Camera;
     destroyCamera(camera: Camera);
     getCameras(): Camera[];
-    getCamera(): Camera;
+    getCamera(index: number): Camera;
     getPlugins(): PluginDescription[];
     getPlugin(): PluginDescription;
 };
